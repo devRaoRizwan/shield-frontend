@@ -80,16 +80,16 @@ export default function MainLayout({ children }) {
                     alt="Shield House"
                     onError={() => setLogoError(true)}
                     sx={{
-                      width: { xs: 60, sm: 60 },
-                      height: { xs: 60, sm: 60 },
+                      width: { xs: 50, sm: 50 },
+                      height: { xs: 50, sm: 50 },
                       borderRadius: 0,
                       objectFit: "contain",
                       display: "block",
                       p: 0.01,
                       filter: "contrast(1.15) brightness(1.08) saturate(2.05)",
-                      transform: { xs: "scale(2.28)", sm: "scale(2.5)" },
+                      transform: { xs: "scale(1.5)", sm: "scale(1.6)" },
                       transformOrigin: "center",
-                      mt: "6px",
+                      mt: "4px",
                     }}
                   />
                 ) : (
