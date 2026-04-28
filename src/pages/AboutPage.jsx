@@ -84,12 +84,11 @@ export default function AboutPage() {
               alt="Shield House"
               sx={{
                 width: "100%",
-                maxWidth: 320,
-                maxHeight: 320,
+                maxWidth: 280,
                 height: "auto",
                 mx: "auto",
                 display: "block",
-                borderRadius: "50%",
+                borderRadius: 2,
                 border: (theme) => `1px solid ${theme.palette.divider}`,
                 boxShadow: (theme) => theme.customShadows.soft,
               }}
