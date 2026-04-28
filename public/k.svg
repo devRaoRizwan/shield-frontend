@@ -1,0 +1,12 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="bg" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(200 120) rotate(60) scale(420)">
+      <stop offset="0" stop-color="#23262F"/>
+      <stop offset="1" stop-color="#0A0B10"/>
+    </radialGradient>
+  </defs>
+  <circle cx="256" cy="256" r="252" fill="url(#bg)" stroke="#95A0B8" stroke-opacity="0.55" stroke-width="8"/>
+  <text x="62" y="235" fill="#F2E86D" font-family="Segoe UI, Arial, sans-serif" font-size="120" font-weight="700">S</text>
+  <text x="130" y="238" fill="#F2E86D" font-family="Segoe UI, Arial, sans-serif" font-size="94" font-weight="700" letter-spacing="1.5">HIELD</text>
+  <text x="240" y="330" fill="#F2E86D" font-family="Segoe UI, Arial, sans-serif" font-size="94" font-weight="700" letter-spacing="1.5">HOUSE</text>
+</svg>
