@@ -7,6 +7,7 @@ const navItems = [
   { label: "Home", path: "/" },
   { label: "Contact", path: "/contact" },
   { label: "About", path: "/about" },
+  { label: "Login as Admin", path: "/admin/login" },
 ];
 
 export default function MainLayout({ children }) {
