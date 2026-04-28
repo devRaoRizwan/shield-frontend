@@ -53,7 +53,7 @@ export function ShopSection() {
           Shop
         </Typography>
         <Typography color="text.secondary">
-          Browse starter catalog items for your Shield House platform.
+          Explore our collection of premium custom shields designed to honor every achievement.
         </Typography>
       </Box>
 

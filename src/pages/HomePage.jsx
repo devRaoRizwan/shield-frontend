@@ -103,7 +103,6 @@ export default function HomePage() {
             sx={{
               opacity: 0.95,
               maxWidth: 700,
-              fontFamily: '"papyrus", "Brush Script MT", cursive',
               fontWeight: 500,
               fontSize: { xs: "1rem", md: "1.4rem" },
               lineHeight: 1.8,
@@ -112,8 +111,7 @@ export default function HomePage() {
               textShadow: "0 2px 14px rgba(0,0,0,0.45)",
             }}
           >
-            At Shield House, we design and manufacture premium, customized award shields that turn
-            achievements into lasting memories.
+            Where Achievements Become Legacy
           </Typography>
 
           <Stack direction={{ xs: "column", sm: "row" }} spacing={2} sx={{ mt: 3 }}>
