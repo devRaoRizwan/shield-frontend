@@ -94,9 +94,6 @@ export function ShopSection() {
                 />
                 <CardContent sx={{ flex: 1, textAlign: "center" }}>
                   <Typography variant="h6">{product.name}</Typography>
-                  <Typography color="text.secondary" sx={{ mt: 1 }}>
-                    {product.description}
-                  </Typography>
                 </CardContent>
               </CardActionArea>
             </Card>
