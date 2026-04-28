@@ -84,7 +84,7 @@ export default function AboutPage() {
               alt="Shield House"
               sx={{
                 width: "100%",
-                maxWidth: 260,
+                maxWidth: 320,
                 maxHeight: 320,
                 height: "auto",
                 mx: "auto",
