@@ -71,7 +71,7 @@ export function ShopSection() {
 
       <Grid container spacing={3}>
         {products.map((product) => (
-          <Grid key={product.name} size={{ xs: 12, md: 4 }}>
+          <Grid key={product.name} size={{ xs: 6, sm: 4, md: 4 }}>
             <Card elevation={2} sx={{ height: "100%" }}>
               <CardActionArea
                 component={Link}
@@ -84,7 +84,7 @@ export function ShopSection() {
                   alt={product.name}
                   sx={{
                     width: "calc(100% - 16px)",
-                    height: 260,
+                    height: { xs: 180, sm: 220, md: 260 },
                     objectFit: "cover",
                     display: "block",
                     mx: 1,
