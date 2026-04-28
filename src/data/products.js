@@ -2,7 +2,7 @@ export const products = [
   {
     slug: "shield-panel-a1",
     name: "Shield Panel A1",
-    image: "/about_page_img.jpg",
+    image: "/about_page_img.jpeg",
     description: "High-density panel for heavy-duty environments.",
     customizationOption:
       "Available in custom sizes, thickness levels, and finish variations to match different installation needs.",
