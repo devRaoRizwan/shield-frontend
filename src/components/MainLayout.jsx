@@ -76,7 +76,7 @@ export default function MainLayout({ children }) {
                 {!logoError ? (
                   <Box
                     component="img"
-                    src="/shield-house-logo.png"
+                    src="/main_logo.png"
                     alt="Shield House"
                     onError={() => setLogoError(true)}
                     sx={{
