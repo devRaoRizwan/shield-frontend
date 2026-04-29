@@ -80,7 +80,7 @@ export default function AboutPage() {
           >
             <Box
               component="img"
-              src="/about_page_img.png"
+              src="/main_logo.png"
               alt="Shield House"
               sx={{
                 width: "100%",
