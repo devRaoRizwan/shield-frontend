@@ -1,12 +1,14 @@
 import { useState } from "react";
-import { Alert, Box, Button, Card, CardContent, Grid, IconButton, Link, Paper, Stack, TextField, Typography } from "@mui/material";
+import { Box, Button, ButtonBase, Card, CardContent, Divider, Grid, IconButton, Link, Paper, Stack, TextField, Typography } from "@mui/material";
 import PhoneOutlinedIcon from "@mui/icons-material/PhoneOutlined";
 import MailOutlineIcon from "@mui/icons-material/MailOutline";
 import LocationOnOutlinedIcon from "@mui/icons-material/LocationOnOutlined";
 import FacebookOutlinedIcon from "@mui/icons-material/FacebookOutlined";
 import InstagramIcon from "@mui/icons-material/Instagram";
 import AccessTimeOutlinedIcon from "@mui/icons-material/AccessTimeOutlined";
-import { createInquiry } from "../lib/api";
+import WhatsAppIcon from "@mui/icons-material/WhatsApp";
+import ChevronRightIcon from "@mui/icons-material/ChevronRight";
+import { buildWhatsappLink } from "../lib/contact";
 
 function TikTokIcon() {
   return (
@@ -65,37 +67,25 @@ const socialLinks = [
   },
 ];
 
+const commonQuestions = [
+  "How much does a custom shield cost?",
+  "Can you print our logo and text on the shield?",
+  "What sizes and materials do you offer?",
+  "How long will my order take?",
+  "Do you give discounts on bulk orders?",
+  "Can you deliver outside Multan?",
+];
+
 export default function ContactPage() {
-  const [form, setForm] = useState({
-    full_name: "",
-    email: "",
-    subject: "",
-    message: "",
-  });
-  const [submitting, setSubmitting] = useState(false);
-  const [success, setSuccess] = useState("");
-  const [error, setError] = useState("");
+  const [query, setQuery] = useState("");
 
-  async function handleSubmit(event) {
+  function ask(question) {
+    window.open(buildWhatsappLink(question), "_blank", "noreferrer");
+  }
+
+  function handleSubmit(event) {
     event.preventDefault();
-    setSubmitting(true);
-    setSuccess("");
-    setError("");
-
-    try {
-      await createInquiry(form);
-      setSuccess("Your inquiry has been sent to the admin.");
-      setForm({
-        full_name: "",
-        email: "",
-        subject: "",
-        message: "",
-      });
-    } catch (err) {
-      setError(err.message || "Unable to send your inquiry right now.");
-    } finally {
-      setSubmitting(false);
-    }
+    ask(query);
   }
 
   return (
@@ -105,7 +95,7 @@ export default function ContactPage() {
           Contact Us
         </Typography>
         <Typography color="text.secondary">
-          Send your inquiry and we will respond with technical and product guidance.
+          Pick a common question or ask your own, and we will reply on WhatsApp.
         </Typography>
       </Box>
 
@@ -170,52 +160,74 @@ export default function ContactPage() {
         </Grid>
 
         <Grid size={{ xs: 12, md: 5 }}>
-          <Paper elevation={2} sx={{ p: { xs: 2.5, md: 4 }, height: "100%" }}>
-            <Stack spacing={2} component="form" onSubmit={handleSubmit}>
-              {success ? <Alert severity="success">{success}</Alert> : null}
-              {error ? <Alert severity="error">{error}</Alert> : null}
-              <TextField
-                label="Full Name"
-                fullWidth
-                required
-                value={form.full_name}
-                onChange={(event) =>
-                  setForm((current) => ({ ...current, full_name: event.target.value }))
-                }
-              />
-              <TextField
-                label="Email Address"
-                type="email"
-                fullWidth
-                required
-                value={form.email}
-                onChange={(event) =>
-                  setForm((current) => ({ ...current, email: event.target.value }))
-                }
-              />
-              <TextField
-                label="Subject"
-                fullWidth
-                required
-                value={form.subject}
-                onChange={(event) =>
-                  setForm((current) => ({ ...current, subject: event.target.value }))
-                }
-              />
-              <TextField
-                label="Message"
-                multiline
-                rows={5}
-                fullWidth
-                required
-                value={form.message}
-                onChange={(event) =>
-                  setForm((current) => ({ ...current, message: event.target.value }))
-                }
-              />
-              <Button type="submit" variant="contained" size="large" sx={{ alignSelf: "flex-start" }} disabled={submitting}>
-                {submitting ? "Sending..." : "Send Query"}
-              </Button>
+          <Paper elevation={2} sx={{ p: { xs: 2.5, md: 3.5 }, height: "100%" }}>
+            <Stack spacing={2.5}>
+              <Box>
+                <Typography variant="h6" sx={{ mb: 0.5 }}>
+                  Common Questions
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Tap a question and it opens in WhatsApp, ready to send.
+                </Typography>
+              </Box>
+
+              <Stack spacing={1.2}>
+                {commonQuestions.map((question) => (
+                  <ButtonBase
+                    key={question}
+                    onClick={() => ask(question)}
+                    sx={{
+                      px: 1.75,
+                      py: 1.4,
+                      borderRadius: 2,
+                      textAlign: "left",
+                      justifyContent: "space-between",
+                      gap: 1,
+                      border: (theme) => `1px solid ${theme.palette.divider}`,
+                      bgcolor: "rgba(255,253,249,0.82)",
+                      transition: "all 0.22s ease",
+                      "&:hover": {
+                        bgcolor: "rgba(184,138,27,0.08)",
+                        borderColor: "rgba(184,138,27,0.34)",
+                        transform: "translateY(-1px)",
+                      },
+                    }}
+                  >
+                    <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                      {question}
+                    </Typography>
+                    <ChevronRightIcon fontSize="small" sx={{ color: "secondary.main", flexShrink: 0 }} />
+                  </ButtonBase>
+                ))}
+              </Stack>
+
+              <Divider sx={{ "&::before, &::after": { borderColor: "divider" } }}>
+                <Typography variant="body2" color="text.secondary">
+                  or ask your own
+                </Typography>
+              </Divider>
+
+              <Stack spacing={2} component="form" onSubmit={handleSubmit}>
+                <TextField
+                  label="Your Question"
+                  placeholder="Tell us what you need and we will guide you."
+                  multiline
+                  rows={4}
+                  fullWidth
+                  required
+                  value={query}
+                  onChange={(event) => setQuery(event.target.value)}
+                />
+                <Button
+                  type="submit"
+                  variant="contained"
+                  size="large"
+                  startIcon={<WhatsAppIcon />}
+                  disabled={!query.trim()}
+                >
+                  Ask on WhatsApp
+                </Button>
+              </Stack>
             </Stack>
           </Paper>
         </Grid>

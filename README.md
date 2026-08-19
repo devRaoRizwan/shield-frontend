@@ -1,369 +1,290 @@
-# Shield House Frontend
+# Shield House — Technical README
 
-A modern React + Vite frontend for the Shield House e-commerce platform.
-
-## Tech Stack
-
-- **Framework:** React 19.1.0
-- **Build Tool:** Vite 6.3.5
-- **Routing:** React Router DOM 7.6.2
-- **UI Framework:** Material-UI (MUI) 7.0.2
-- **Styling:** Emotion
-- **Package Manager:** npm
-- **Deployment:** Vercel
-
-## Features
-
-- Fast development with Vite HMR
-- Modern React 19 with hooks
-- Client-side routing with React Router
-- Material-UI components
-- Responsive design
-- Environment-based API URLs
-
-## Project Structure
+Static React + Vite site. No backend, no database, no admin panel. Product content is
+bundled at build time and served from Vercel's CDN.
 
 ```
-Shield Frontend/
-├── public/               # Static assets
-│   └── videos/          # Video files
+Customer     browser ──► Vercel CDN (static HTML + JS + WebP)
+Enquiries    browser ──► wa.me deep link ──► WhatsApp
+Publishing   edit 2 things ──► git push ──► Vercel rebuild ──► live (~1 min)
+```
+
+"Edit 2 things" means **one JSON file and two image files**. That is the whole publishing
+process, and the rest of this document is about doing it correctly.
+
+---
+
+## Adding a new shield
+
+Everything you touch lives in exactly two places:
+
+| What | Where |
+|---|---|
+| The product record | `src/data/products.json` |
+| The two images | `public/products/` |
+
+### Step 1 — pick the slug
+
+The slug is the product's identity and its URL. Existing products use zero-padded numbers
+`01` through `30`, so the next one is `31`.
+
+```
+slug "31"  ──►  https://your-site.com/shop/31
+```
+
+Rules: must be unique, and may only contain letters, numbers and dashes. Once the product is
+live, **never change the slug** — it breaks every link and every WhatsApp enquiry that
+referenced it.
+
+### Step 2 — make the two images
+
+The site needs two WebP files per product, at two sizes, named after the slug:
+
+| File | Size | Used by |
+|---|---|---|
+| `public/products/31-sm.webp` | 400px | Shop grid |
+| `public/products/31.webp` | 800px | Product detail page |
+
+Put your source photo in the project root as `new-photo.jpg`, then run this from the project
+root. It writes both files directly into `public/products/`:
+
+```bash
+python3 - <<'PY'
+from PIL import Image
+
+SRC  = "new-photo.jpg"   # your source photo
+SLUG = "31"              # must match the slug in products.json
+
+im = Image.open(SRC).convert("RGB")
+for size, tag in ((800, ""), (400, "-sm")):
+    out = im.copy()
+    out.thumbnail((size, size), Image.LANCZOS)
+    path = f"public/products/{SLUG}{tag}.webp"
+    out.save(path, "WEBP", quality=82, method=6)
+    print(f"wrote {path}  {out.size}")
+PY
+```
+
+This needs Pillow (`pip install pillow`) — already installed on the current dev machine.
+ImageMagick (`magick -resize 800x800 -quality 82 …`) does the same job but is **not**
+installed here, so the snippet above is the path of least resistance.
+
+Do not skip the conversion and commit a raw JPEG. Source photos from the shop are typically
+1200px at 300 DPI (~100 KB each); the site never displays them larger than 260px in the grid
+or 420px on the detail page. All 30 current products together are only 1.1 MB because they
+are correctly sized.
+
+### Step 3 — add the record
+
+Open `src/data/products.json` and append an object to the array:
+
+```json
+{
+  "slug": "31",
+  "name": "Wooden Crest",
+  "description": "",
+  "details": "Premium MDF Deco Polish Mate Finish Colour Black Print On Golden Acrylic Size 8x10 Inches",
+  "customization_option": "",
+  "image": "/products/31.webp",
+  "thumb": "/products/31-sm.webp",
+  "is_active": true
+}
+```
+
+Note the image paths are **absolute from the site root** and start with `/products/` — not
+`/public/products/`. `public/` is the build input directory; it does not appear in URLs.
+
+**Position in the array is the position in the shop grid.** Append to the end for the newest
+product to appear last; insert at the top to feature it first.
+
+### Step 4 — check it locally
+
+```bash
+npm run dev
+```
+
+Open http://localhost:5173/shop and confirm the new card appears with its image, then click
+through to http://localhost:5173/shop/31 and check the detail text and the WhatsApp button.
+Vite picks up JSON edits automatically; restart the dev server if it does not.
+
+### Step 5 — publish
+
+```bash
+git add src/data/products.json public/products/31.webp public/products/31-sm.webp
+git commit -m "Add product 31 (Wooden Crest)"
+git push
+```
+
+Vercel rebuilds on push. The change is live in about a minute.
+
+---
+
+## Field reference
+
+Read this before writing content — one of these fields does nothing.
+
+| Field | Required | Where it appears |
+|---|---|---|
+| `slug` | yes | The URL (`/shop/31`), and shown as `Shield ID: 31` on the detail page (uppercased) |
+| `name` | yes | Shop grid card, detail page heading, browser tab context |
+| `details` | yes | The specification paragraph on the detail page |
+| `image` | yes | Detail page photo (800px file) |
+| `thumb` | recommended | Shop grid photo (400px file). If omitted, the grid falls back to `image`, which wastes bandwidth |
+| `customization_option` | no | Detail page. **If empty, the page shows "Custom options available on request."** — all 30 current products leave it empty and rely on that fallback |
+| `is_active` | no | Visibility. **Only the literal value `false` hides a product.** `true`, or omitting the field entirely, means visible |
+| `description` | no | **Nothing. It is stored but never rendered on the site.** It is a leftover from the old Django backend |
+
+That last row matters: don't spend time writing a `description`. If you want text visible to
+customers, it goes in `details`.
+
+### The WhatsApp message
+
+The detail page's WhatsApp button builds this message from the record:
+
+```
+Hello, I want to contact you about this product.
+Shield ID: 31
+Product URL: https://your-site.com/shop/31
+```
+
+The number lives in one place: `whatsappNumber` in `src/lib/contact.js`.
+
+---
+
+## Other common edits
+
+| Task | Do this |
+|---|---|
+| Change a price/spec | Edit `details` on that record |
+| Rename a product | Edit `name`. Leave `slug` alone |
+| Hide temporarily | Set `"is_active": false`. Record and images stay in the repo |
+| Delete permanently | Remove the object from the array **and** delete both `.webp` files |
+| Reorder the grid | Move the object up or down in the array |
+| Change the contact number | `whatsappNumber` in `src/lib/contact.js` |
+| Change the FAQ questions | `commonQuestions` array at the top of `src/pages/ContactPage.jsx` |
+| Change shop address / hours | `contactDetails` array in `src/pages/ContactPage.jsx` |
+
+---
+
+## File map
+
+```
+shield-frontend/
+├── public/
+│   ├── products/              # ← product images live here (60 files: 30 × 2 sizes)
+│   ├── videos/
+│   │   └── shield-house.mp4   # home page hero video — 28 MB, see "Known issues"
+│   └── main_logo.png          # header logo
 ├── src/
-│   ├── App.jsx          # Main app component
-│   ├── main.jsx         # Entry point
-│   ├── theme.js         # MUI theme configuration
-│   ├── components/      # Reusable components
-│   │   ├── Footer.jsx
-│   │   ├── MainLayout.jsx
-│   │   └── ProtectedRoute.jsx
-│   ├── context/         # React context
-│   │   └── AdminAuthContext.jsx
-│   ├── data/            # Static data
-│   │   └── products.js
-│   ├── lib/             # Utilities
-│   │   └── api.js       # API client
-│   └── pages/           # Page components
-│       ├── AboutPage.jsx
-│       ├── AdminDashboardPage.jsx
-│       ├── AdminLoginPage.jsx
-│       ├── ContactPage.jsx
-│       ├── HomePage.jsx
-│       ├── ProductDetailsPage.jsx
-│       └── ShopPage.jsx
-├── .gitignore           # Git ignore rules
-├── .env.local           # Dev environment variables
-├── .env.production      # Production environment variables
-├── package.json         # Dependencies
-├── vite.config.js       # Vite configuration
-└── README.md            # This file
+│   ├── data/
+│   │   └── products.json      # ← the catalogue. This IS the database
+│   ├── lib/
+│   │   ├── api.js             # reads products.json, filters is_active. No network calls
+│   │   └── contact.js         # WhatsApp number + deep-link builder
+│   ├── pages/
+│   │   ├── HomePage.jsx       # hero video, counters, embeds the shop grid
+│   │   ├── ShopPage.jsx       # the grid. Exports ShopSection, reused by HomePage
+│   │   ├── ProductDetailsPage.jsx  # /shop/:slug
+│   │   ├── ContactPage.jsx    # info cards + FAQ questions + free-text query
+│   │   └── AboutPage.jsx
+│   ├── components/
+│   │   ├── MainLayout.jsx     # header, nav items, footer wrapper
+│   │   └── Footer.jsx
+│   ├── theme.js               # MUI theme: gold palette, gradients, shadows
+│   ├── App.jsx                # routes
+│   └── main.jsx               # entry point
+├── vercel.json                # SPA rewrite: all paths → / so /shop/31 works on direct visit
+└── vite.config.js
 ```
 
-## Prerequisites
+There is no `.env` file and no environment variables. Nothing to configure.
 
-- Node.js 18+ or npm 9+
-- Git
-- Vercel account (for deployment)
+## How the data layer works
 
-## Installation
+`src/lib/api.js` is the entire data layer — 17 lines:
 
-### 1. Clone the repository
+```js
+import productsData from "../data/products.json";
+
+const products = productsData.filter((product) => product.is_active !== false);
+
+export function getProducts() { return products; }
+export function getProduct(slug) { return products.find((p) => p.slug === slug) || null; }
+```
+
+Both are **synchronous**. Pages call them directly during render — there is no `useEffect`,
+no loading state, no error state, no cold start. `getProduct` returning `null` makes
+`ProductDetailsPage` redirect to `/shop`, which is how unknown slugs are handled.
+
+## Commands
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/shield-frontend.git
-cd shield-frontend
+npm install          # once, after cloning
+npm run dev          # dev server at http://localhost:5173 (HMR)
+npm run build        # production build into dist/
+npm run preview      # serve the built dist/ locally
 ```
 
-### 2. Install dependencies
+`npm run preview` defaults to port 4173. On the current dev machine that port is taken by an
+unrelated app, so Vite falls back to 4174 — read the URL it prints.
 
-```bash
-npm install
-```
+## Deployment
 
-### 3. Create environment files
+Vercel, connected to the GitHub repo. Every push to `main` triggers a rebuild. No environment
+variables, no build settings to configure — Vite is auto-detected.
 
-**`.env.local` (for local development):**
-```env
-VITE_API_URL=http://localhost:8000
-```
+## Verification checklist
 
-**`.env.production` (for Vercel deployment):**
-```env
-VITE_API_URL=https://your-api.onrender.com
-```
+Before pushing a new product:
 
-## Development
-
-### Start Development Server
-
-```bash
-npm run dev
-```
-
-Development server will run at: **http://localhost:5173**
-
-Hot Module Replacement (HMR) enabled by default.
-
-### Build for Production
-
-```bash
-npm run build
-```
-
-Creates optimized production build in `dist/` folder.
-
-### Preview Production Build
-
-```bash
-npm run preview
-```
-
-Test production build locally.
-
-## API Integration
-
-### API Client (`src/lib/api.js`)
-
-The API client automatically uses environment variables:
-
-```javascript
-const API_URL = import.meta.env.VITE_API_URL;
-```
-
-**Development:** `http://localhost:8000`
-**Production:** `https://your-api.onrender.com`
-
-### Making API Calls
-
-```javascript
-import { fetchProducts, fetchProductById } from './lib/api';
-
-// Fetch all products
-const products = await fetchProducts();
-
-// Fetch single product
-const product = await fetchProductById(productId);
-```
-
-## Deployment on Vercel
-
-### Prerequisites
-
-1. Frontend code pushed to GitHub
-2. Backend API running on Render
-3. Vercel account (https://vercel.com)
-
-### Step 1: Connect GitHub to Vercel
-
-1. Log in to Vercel dashboard
-2. Click **Add New** → **Project**
-3. Import GitHub repository: `shield-frontend`
-4. Vercel auto-detects Vite configuration
-
-### Step 2: Configure Environment Variables
-
-In Vercel project settings → **Environment Variables**:
-
-Add:
-```
-VITE_API_URL=https://your-api.onrender.com
-```
-
-### Step 3: Deploy
-
-1. Click **Deploy**
-2. Wait for build to complete (~1-2 minutes)
-3. Once deployed, get your Vercel URL: `https://your-project.vercel.app`
-
-### Step 4: Update Backend CORS
-
-Go to your Render dashboard and update:
-
-```
-CORS_ALLOWED_ORIGINS=https://your-project.vercel.app
-```
-
-Redeploy backend to apply changes.
-
-## Available Scripts
-
-```bash
-# Start development server with HMR
-npm run dev
-
-# Build for production
-npm run build
-
-# Preview production build
-npm run preview
-
-# Install new dependency
-npm install package-name
-
-# Remove dependency
-npm uninstall package-name
-
-# Update all packages
-npm update
-```
-
-## Environment Variables
-
-### `.env.local` (Development)
-```env
-VITE_API_URL=http://localhost:8000
-```
-
-### `.env.production` (Production)
-```env
-VITE_API_URL=https://your-api-domain.onrender.com
-```
-
-**Note:** Vercel reads from `.env.local` in development and `.env.production` in production.
-
-## Pages & Components
-
-### Pages
-
-- **HomePage.jsx** - Landing page
-- **ShopPage.jsx** - Products listing
-- **ProductDetailsPage.jsx** - Single product details
-- **AboutPage.jsx** - About section
-- **ContactPage.jsx** - Contact form
-- **AdminLoginPage.jsx** - Admin authentication
-- **AdminDashboardPage.jsx** - Admin panel
-
-### Components
-
-- **MainLayout.jsx** - Main layout wrapper with header/footer
-- **Footer.jsx** - Footer component
-- **ProtectedRoute.jsx** - Protected route for admin pages
-
-### Context
-
-- **AdminAuthContext.jsx** - Admin authentication state management
-
-## Styling
-
-### Material-UI Theme
-
-Customized in `src/theme.js`:
-
-```javascript
-import { createTheme } from '@mui/material/styles';
-
-const theme = createTheme({
-  palette: {
-    primary: {
-      main: '#1976d2',
-    },
-    secondary: {
-      main: '#dc004e',
-    },
-  },
-});
-```
-
-Use throughout components:
-```javascript
-import { useTheme, styled } from '@mui/material/styles';
-
-const MyComponent = styled(Box)(({ theme }) => ({
-  padding: theme.spacing(2),
-}));
-```
-
-## Production Checklist
-
-- [x] `.env.production` contains correct `VITE_API_URL`
-- [x] Backend API is running on Render
-- [x] CORS is configured in backend
-- [x] Build passes without warnings: `npm run build`
-- [x] All environment variables set in Vercel dashboard
-- [x] Code pushed to GitHub
-- [x] Vercel project linked to GitHub
+- [ ] Both `.webp` files exist in `public/products/` and are named exactly after the slug
+- [ ] `image` and `thumb` paths start with `/products/` (not `/public/products/`)
+- [ ] The slug is unique and appears nowhere else in `products.json`
+- [ ] `products.json` is still valid JSON — `python3 -m json.tool src/data/products.json > /dev/null`
+- [ ] `npm run build` completes
+- [ ] The card appears at `/shop` and the detail page loads at `/shop/<slug>`
 
 ## Troubleshooting
 
-### API 404 or CORS Errors
-
-1. Check `VITE_API_URL` matches backend domain
-2. Verify backend `CORS_ALLOWED_ORIGINS` includes your Vercel URL
-3. Check backend is running and accessible
-4. Browser DevTools → Network tab → check actual requests
-
-### Build Fails
+**Product does not appear.** Check `is_active` is not `false`, and that the object is
+actually inside the array. Then confirm the JSON parses:
 
 ```bash
-# Clear node_modules and reinstall
-rm -r node_modules
+python3 -m json.tool src/data/products.json > /dev/null && echo "valid JSON"
+```
+
+**Broken image.** The path in `products.json` must start with `/products/` and match the
+filename exactly, including case. `31.WEBP` will not match `/products/31.webp`.
+
+**Grid image looks soft or loads slowly.** `thumb` is probably missing, so the grid is
+loading the 800px `image` instead, or the file was committed as a resized JPEG rather than
+WebP.
+
+**Detail page shows "Custom options available on request."** That is the intended fallback
+for an empty `customization_option`, not a bug.
+
+**Build fails.**
+
+```bash
+rm -rf node_modules
 npm install
 npm run build
 ```
 
-### HMR Not Working
+## Known issues
 
-1. Check development server is running: `npm run dev`
-2. Check port 5173 is available
-3. Restart dev server
+**`public/videos/shield-house.mp4` is 28 MB** and autoplays on the home page. It is roughly
+25× the size of all 30 product images combined and is by far the largest thing the site
+serves. Compressing it, or adding `preload="none"` with a poster image in
+`src/pages/HomePage.jsx`, would improve load time more than any other single change.
 
-### Environment Variables Not Loading
+**Bundle is ~505 KB (156 KB gzipped)**, mostly MUI. Route-level `React.lazy()` would split
+it, but it is not currently a problem.
 
-Ensure:
-- Variable names start with `VITE_` 
-- Accessed as `import.meta.env.VITE_VARIABLE_NAME`
-- `.env` files are in project root
-- Dev server restarted after changing `.env`
-
-### Blank Page or 404 After Deployment
-
-1. Check build output: `npm run build`
-2. Verify `vite.config.js` base path if needed
-3. Check Vercel deployment logs in dashboard
-
-## Performance Tips
-
-- Use code splitting with `React.lazy()` for pages
-- Optimize images before uploading
-- Use MUI's built-in responsive utilities
-- Leverage Vite's fast HMR during development
-
-## Learning Resources
-
-- [React Documentation](https://react.dev)
-- [Vite Guide](https://vitejs.dev/guide/)
-- [React Router](https://reactrouter.com)
-- [Material-UI Documentation](https://mui.com)
-- [Vercel Deployment](https://vercel.com/docs)
-
-## Useful Libraries Already Installed
-
-- **@mui/material** - MUI components
-- **@mui/icons-material** - MUI icons
-- **@emotion/react** - CSS-in-JS
-- **@emotion/styled** - Styled components
-- **react-router-dom** - Client-side routing
-
-## Adding New Dependencies
-
-```bash
-# Install package
-npm install package-name
-
-# Install dev dependency
-npm install -D package-name
-
-# Uninstall package
-npm uninstall package-name
-```
+**There is no "Shop" link in the header nav** (`navItems` in `src/components/MainLayout.jsx`
+lists Home, Contact, About). The shop is reached from the home page's "Explore Shop" button
+and the grid embedded there. Add it to `navItems` if you want it in the header.
 
 ## License
 
-MIT License
-
-## Support
-
-If you encounter issues:
-
-1. Check existing issues on GitHub
-2. Review Vercel deployment logs
-3. Consult [React](https://react.dev) and [Vite](https://vitejs.dev) documentation
-4. Check [MUI documentation](https://mui.com) for component issues
+MIT

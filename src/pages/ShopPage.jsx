@@ -1,50 +1,18 @@
 import {
+  Alert,
   Box,
   Card,
   CardActionArea,
   CardContent,
-  CircularProgress,
   Grid,
   Stack,
-  Alert,
   Typography,
 } from "@mui/material";
 import { Link } from "react-router-dom";
-import { useEffect, useState } from "react";
-import { getMediaUrl, getProducts } from "../lib/api";
+import { getProducts } from "../lib/api";
 
 export function ShopSection() {
-  const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-
-  useEffect(() => {
-    let isMounted = true;
-
-    async function loadProducts() {
-      try {
-        const data = await getProducts();
-        if (isMounted) {
-          setProducts(data);
-          setError("");
-        }
-      } catch (err) {
-        if (isMounted) {
-          setError(err.message || "Unable to load products right now.");
-        }
-      } finally {
-        if (isMounted) {
-          setLoading(false);
-        }
-      }
-    }
-
-    loadProducts();
-
-    return () => {
-      isMounted = false;
-    };
-  }, []);
+  const products = getProducts();
 
   return (
     <Stack spacing={3}>
@@ -57,21 +25,11 @@ export function ShopSection() {
         </Typography>
       </Box>
 
-      {loading ? (
-        <Stack alignItems="center" justifyContent="center" sx={{ py: 8 }}>
-          <CircularProgress />
-        </Stack>
-      ) : null}
-
-      {error ? <Alert severity="error">{error}</Alert> : null}
-
-      {!loading && !error && products.length === 0 ? (
-        <Alert severity="info">No products are available yet.</Alert>
-      ) : null}
+      {products.length === 0 ? <Alert severity="info">No products are available yet.</Alert> : null}
 
       <Grid container spacing={3}>
-        {products.map((product) => (
-          <Grid key={product.name} size={{ xs: 6, sm: 4, md: 4 }}>
+        {products.map((product, index) => (
+          <Grid key={product.slug} size={{ xs: 6, sm: 4, md: 4 }}>
             <Card elevation={2} sx={{ height: "100%" }}>
               <CardActionArea
                 component={Link}
@@ -80,8 +38,12 @@ export function ShopSection() {
               >
                 <Box
                   component="img"
-                  src={getMediaUrl(product.image)}
+                  src={product.thumb || product.image}
                   alt={product.name}
+                  width={400}
+                  height={400}
+                  loading={index < 6 ? "eager" : "lazy"}
+                  decoding="async"
                   sx={{
                     width: "calc(100% - 16px)",
                     height: { xs: 180, sm: 220, md: 260 },

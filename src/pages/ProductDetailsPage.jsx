@@ -1,75 +1,15 @@
 import WhatsAppIcon from "@mui/icons-material/WhatsApp";
-import { Alert, Box, Button, Card, CardContent, CircularProgress, Grid, Stack, Typography } from "@mui/material";
+import { Box, Button, Card, CardContent, Grid, Stack, Typography } from "@mui/material";
 import { Link, Navigate, useParams } from "react-router-dom";
-import { useEffect, useState } from "react";
-import { getMediaUrl, getProduct } from "../lib/api";
-
-const whatsappNumber = "923027036363";
+import { getProduct } from "../lib/api";
+import { buildWhatsappLink } from "../lib/contact";
 
 export default function ProductDetailsPage() {
   const { slug } = useParams();
-  const [product, setProduct] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [notFound, setNotFound] = useState(false);
-  const [error, setError] = useState("");
-
-  useEffect(() => {
-    let isMounted = true;
-
-    async function loadProduct() {
-      setLoading(true);
-      setNotFound(false);
-      setError("");
-
-      try {
-        const data = await getProduct(slug);
-        if (isMounted) {
-          setProduct(data);
-        }
-      } catch (err) {
-        if (!isMounted) {
-          return;
-        }
-
-        if (err.message?.includes("404")) {
-          setNotFound(true);
-          setProduct(null);
-          return;
-        }
-
-        setError(err.message || "Unable to load this product right now.");
-      } finally {
-        if (isMounted) {
-          setLoading(false);
-        }
-      }
-    }
-
-    loadProduct();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [slug]);
-
-  if (loading) {
-    return (
-      <Stack alignItems="center" justifyContent="center" sx={{ py: 8 }}>
-        <CircularProgress />
-      </Stack>
-    );
-  }
-
-  if (notFound) {
-    return <Navigate to="/shop" replace />;
-  }
-
-  if (error) {
-    return <Alert severity="error">{error}</Alert>;
-  }
+  const product = getProduct(slug);
 
   if (!product) {
-    return null;
+    return <Navigate to="/shop" replace />;
   }
 
   const shieldId = product.slug.toUpperCase();
@@ -78,15 +18,13 @@ export default function ProductDetailsPage() {
       ? `${window.location.origin}/shop/${product.slug}`
       : `/shop/${product.slug}`;
 
-  const whatsappMessage = encodeURIComponent(
+  const whatsappLink = buildWhatsappLink(
     [
       "Hello, I want to contact you about this product.",
       `Shield ID: ${shieldId}`,
       `Product URL: ${productUrl}`,
     ].join("\n")
   );
-
-  const whatsappLink = `https://wa.me/${whatsappNumber}?text=${whatsappMessage}`;
 
   return (
     <Stack spacing={3}>
@@ -104,8 +42,11 @@ export default function ProductDetailsPage() {
           <Grid size={{ xs: 12, md: 6 }}>
             <Box
               component="img"
-              src={getMediaUrl(product.image)}
+              src={product.image}
               alt={product.name}
+              width={800}
+              height={800}
+              decoding="async"
               sx={{
                 width: "100%",
                 height: "100%",
@@ -123,6 +64,9 @@ export default function ProductDetailsPage() {
                   <Typography variant="h5" sx={{ fontWeight: "bold", mb: 1 }}>
                     {product.name}
                   </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Shield ID: {shieldId}
+                  </Typography>
                 </Box>
 
                 <Box>
@@ -133,7 +77,9 @@ export default function ProductDetailsPage() {
                   <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 0.75 }}>
                     Customization Option
                   </Typography>
-                  <Typography color="text.secondary">{product.customization_option || "Custom options available on request."}</Typography>
+                  <Typography color="text.secondary">
+                    {product.customization_option || "Custom options available on request."}
+                  </Typography>
                 </Box>
 
                 <Button

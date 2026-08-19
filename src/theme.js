@@ -145,6 +145,15 @@ const theme = createTheme({
           background: "linear-gradient(135deg, #d8b454 0%, #b88a1b 55%, #8f6812 100%)",
           color: "#24190a",
           boxShadow: "0 12px 26px rgba(184, 138, 27, 0.28)",
+          // The gradient above is set with the `background` shorthand, which would
+          // otherwise survive MUI's disabled `background-color` and leave a
+          // disabled button looking fully active.
+          "&.Mui-disabled": {
+            background: "none",
+            backgroundColor: alpha(gold[500], 0.16),
+            color: alpha("#24190a", 0.4),
+            boxShadow: "none",
+          },
         },
         containedSecondary: {
           background: "linear-gradient(135deg, #403831 0%, #2f2922 100%)",
