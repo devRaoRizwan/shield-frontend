@@ -82,10 +82,13 @@ export default function HomePage() {
         <Box
           component="video"
           src="/videos/shield-house.mp4"
+          poster="/videos/shield-house-poster.webp"
           autoPlay
           muted
           loop
           playsInline
+          preload="metadata"
+          aria-hidden="true"
           sx={{
             position: "absolute",
             inset: 0,
