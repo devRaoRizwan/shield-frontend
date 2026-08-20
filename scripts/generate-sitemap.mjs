@@ -1,7 +1,7 @@
 // Regenerates public/sitemap.xml from the bundled product list. Runs on `npm run build`.
 import { readFileSync, writeFileSync } from "node:fs";
 
-const SITE = "https://shieldhouse.pk";
+const SITE = "https://www.shieldhouse.pk";
 const products = JSON.parse(readFileSync("src/data/products.json", "utf8"));
 
 const urls = [

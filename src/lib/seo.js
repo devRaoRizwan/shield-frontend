@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 
-const SITE = "https://shieldhouse.pk";
+const SITE = "https://www.shieldhouse.pk";
 const SUFFIX = "Shield House";
 
 function setMeta(selector, attr, value, content) {
