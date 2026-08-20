@@ -3,10 +3,21 @@ import { Box, Button, Card, CardContent, Grid, Stack, Typography } from "@mui/ma
 import { Link, Navigate, useParams } from "react-router-dom";
 import { getProduct } from "../lib/api";
 import { buildWhatsappLink } from "../lib/contact";
+import { useSeo } from "../lib/seo";
+import ImageWithSkeleton from "../components/ImageWithSkeleton";
 
 export default function ProductDetailsPage() {
   const { slug } = useParams();
   const product = getProduct(slug);
+
+  // Called before the redirect so hook order stays stable for unknown slugs.
+  useSeo({
+    title: product ? `${product.name} — Custom Award Shield` : "Buy Custom Award Shields Online in Pakistan",
+    description: product
+      ? `${product.name} — ${product.description} Custom printed with your logo and text, made in Multan and delivered across Pakistan.`
+      : "Browse our custom award shield designs, delivered across Pakistan.",
+    path: product ? `/shop/${product.slug}` : "/shop",
+  });
 
   if (!product) {
     return <Navigate to="/shop" replace />;
@@ -38,28 +49,23 @@ export default function ProductDetailsPage() {
       </Box>
 
       <Card elevation={2} sx={{ width: "100%" }}>
-        <Grid container alignItems="stretch">
+        <Grid container alignItems="center">
           <Grid size={{ xs: 12, md: 6 }}>
-            <Box
-              component="img"
+            <ImageWithSkeleton
               src={product.image}
               alt={product.name}
               width={800}
               height={800}
               decoding="async"
-              sx={{
-                width: "100%",
-                height: "100%",
-                minHeight: 420,
-                objectFit: "cover",
-                display: "block",
-              }}
+              objectFit="contain"
+              imgBgcolor="#fff"
+              sx={{ width: "100%", height: { xs: 300, sm: 380, md: 440 } }}
             />
           </Grid>
 
           <Grid size={{ xs: 12, md: 6 }}>
-            <CardContent sx={{ p: { xs: 2.5, md: 4 }, height: "100%" }}>
-              <Stack spacing={3} sx={{ height: "100%" }}>
+            <CardContent sx={{ p: { xs: 2.5, md: 4 } }}>
+              <Stack spacing={2.5}>
                 <Box>
                   <Typography variant="h5" sx={{ fontWeight: "bold", mb: 1 }}>
                     {product.name}
@@ -89,7 +95,7 @@ export default function ProductDetailsPage() {
                   rel="noreferrer"
                   variant="contained"
                   startIcon={<WhatsAppIcon />}
-                  sx={{ alignSelf: "flex-start", mt: "auto" }}
+                  sx={{ alignSelf: "flex-start" }}
                 >
                   Contact on WhatsApp
                 </Button>

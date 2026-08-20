@@ -4,6 +4,7 @@ import MailOutlineIcon from "@mui/icons-material/MailOutline";
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { ShopSection } from "./ShopPage";
+import { useSeo } from "../lib/seo";
 
 const runningLabel =
   "At Shield House, we craft premium custom award shields that make every achievement unforgettable.We deliver unique, high-quality designs for institutions, corporate events, and industries that value excellence.";
@@ -15,6 +16,13 @@ const featureCards = [
 ];
 
 export default function HomePage() {
+  useSeo({
+    title: "Custom Award Shields & Trophies in Multan, Pakistan",
+    description:
+      "Shield House makes premium custom award shields, trophies and corporate gifts in Multan, Pakistan. Your logo and text on any shield, delivered nationwide.",
+    path: "/",
+  });
+
   const [counterTargets] = useState(() => [
     {
       label: "Custom Shields Crafted",

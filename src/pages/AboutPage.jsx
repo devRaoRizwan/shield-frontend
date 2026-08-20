@@ -12,8 +12,18 @@ import WorkspacePremiumOutlinedIcon from "@mui/icons-material/WorkspacePremiumOu
 import PrecisionManufacturingOutlinedIcon from "@mui/icons-material/PrecisionManufacturingOutlined";
 import AutoAwesomeOutlinedIcon from "@mui/icons-material/AutoAwesomeOutlined";
 import LocalShippingOutlinedIcon from "@mui/icons-material/LocalShippingOutlined";
+import { useSeo } from "../lib/seo";
+import ImageWithSkeleton from "../components/ImageWithSkeleton";
+import Testimonials from "../components/Testimonials";
 
 export default function AboutPage() {
+  useSeo({
+    title: "Shield Makers in Multan, Pakistan",
+    description:
+      "Shield House has been making custom award shields and corporate gifts in Multan Cantt — our materials, craftsmanship and order process.",
+    path: "/about",
+  });
+
   const features = [
     {
       title: "Complete In-House Manufacturing",
@@ -48,7 +58,7 @@ export default function AboutPage() {
           boxShadow: (theme) => theme.customShadows.medium,
         }}
       >
-        <Grid container spacing={3} alignItems="stretch">
+        <Grid container spacing={3} alignItems="center">
           <Grid size={{ xs: 12, md: 8 }}>
             <Typography variant="h3" sx={{ mb: 1.2, textAlign: { xs: "center", md: "left" } }}>
               About Us
@@ -78,16 +88,15 @@ export default function AboutPage() {
             size={{ xs: 12, md: 4 }}
             sx={{ display: "flex", alignItems: { xs: "center", md: "flex-end" } }}
           >
-            <Box
-              component="img"
+            <ImageWithSkeleton
               src="/image2.png"
-              alt="Shield House"
+              alt="Custom award shield made by Shield House in Multan"
+              objectFit="contain"
+              aspectRatio="1 / 1"
               sx={{
                 width: "100%",
                 maxWidth: 280,
-                height: "auto",
                 mx: "auto",
-                display: "block",
                 borderRadius: 2,
                 border: (theme) => `1px solid ${theme.palette.divider}`,
                 boxShadow: (theme) => theme.customShadows.soft,
@@ -145,6 +154,8 @@ export default function AboutPage() {
           </Grid>
         ))}
       </Grid>
+
+      <Testimonials />
     </Stack>
   );
 }

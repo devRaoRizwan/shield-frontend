@@ -2,6 +2,7 @@ import { AppBar, Box, Button, Container, Toolbar, Typography } from "@mui/materi
 import { Link, useLocation } from "react-router-dom";
 import { useState } from "react";
 import Footer from "./Footer";
+import WhatsAppWidget from "./WhatsAppWidget";
 
 const navItems = [
   { label: "Home", path: "/" },
@@ -44,7 +45,7 @@ export default function MainLayout({ children }) {
           pt: 2.2,
         }}
       >
-        <Container maxWidth="lg" sx={{ display: "flex", justifyContent: "center" }}>
+        <Container maxWidth="xl" sx={{ display: "flex", justifyContent: "center" }}>
           <Toolbar
             disableGutters
             sx={{
@@ -154,11 +155,13 @@ export default function MainLayout({ children }) {
         </Container>
       </AppBar>
 
-      <Container maxWidth="lg" sx={{ py: 5, flex: 1, position: "relative", zIndex: 1 }}>
+      <Container maxWidth="xl" sx={{ py: 5, flex: 1, position: "relative", zIndex: 1 }}>
         {children}
       </Container>
 
       <Footer />
+
+      <WhatsAppWidget />
     </Box>
   );
 }
